@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:riverbank_pretotype_mobile/common/env.dart';
+import 'package:riverbank_pretotype_mobile/logger/logger.dart';
 import 'package:riverbank_pretotype_mobile/login/model/user.dart';
 
 import 'package:http/http.dart' as http;
@@ -24,16 +25,17 @@ abstract class UserService {
 class UserServiceImpl implements UserService {
   @override
   Future<User?> get(String id) async {
+    logger.d('id: $id');
     var uri = Uri.parse('https://api-dev.riverbank.world/v1/user/$id');
     final response = await http.get(uri);
     final json = jsonDecode(response.body);
-    final user = json[0];
 
-    return User(id: user['id'], name: user['name'], profileImageUrl: user['profileImageUrl'], provider: user['provider'], email: user['email']);
+    return User(id: json['id'], name: json['name'], profileImageUrl: json['profileImageUrl'], provider: json['provider'], email: json['email']);
   }
 
   @override
   Future<User?> getByPreference() async {
+    logger.d('getByPreference');
     final preference = await SharedPreferences.getInstance();
     final userId = preference.getString('user_id');
     if (userId == null) {
@@ -47,19 +49,20 @@ class UserServiceImpl implements UserService {
 class DevUserServiceImpl implements UserService {
   @override
   Future<User?> get(String id) async {
+    logger.d('id: $id');
     var uri = Uri.parse('https://api-dev.riverbank.world/v1/user?userId=$id');
     final response = await http.get(uri);
     final json = jsonDecode(response.body);
     if (json.length == 0) {
       return null;
     }
-    final user = json[0];
 
-    return User(id: user['id'], name: user['name'], profileImageUrl: user['profileImageUrl'], provider: user['provider'], email: user['email']);
+    return User(id: json['id'], name: json['name'], profileImageUrl: json['profileImageUrl'], provider: json['provider'], email: json['email']);
   }
 
   @override
   Future<User?> getByPreference() async {
+    logger.d('getByPreference');
     final preference = await SharedPreferences.getInstance();
     final userId = preference.getString('user_id');
     if (userId == null) {

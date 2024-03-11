@@ -2,13 +2,13 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_svg/svg.dart';
+import 'package:get/get.dart';
 import 'package:riverbank_pretotype_mobile/component/dropdown.dart';
 import 'package:go_router/go_router.dart';
 import 'package:riverbank_pretotype_mobile/exchange/model/exchange_rate.dart';
 import 'package:riverbank_pretotype_mobile/exchange/repository/exchage_rate_repository.dart';
 import 'package:riverbank_pretotype_mobile/exchange/store/exchange_store.dart';
-
-import '../common/color.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class ExchangePage extends StatefulWidget {
   const ExchangePage({super.key});
@@ -24,7 +24,7 @@ class ExchangeState extends State<ExchangePage> {
   int amount = 0;
   final ExchangeRateRepository _repository = ExchangeRateRepository();
   final TextEditingController _fromEditFieldController = TextEditingController(text: '0');
-  bool _canGoNext = false;
+  var _canGoNext = false.obs;
 
   Future<String> getRate(String currency, int digit) async {
     ExchangeRate exchangeRate = await _repository.getExchangeRate(currency);
@@ -32,6 +32,7 @@ class ExchangeState extends State<ExchangePage> {
   }
 
   Future<String> getKrwAmount(String currency, int amount) async {
+    print('getKrwAmount!!!, $currency $amount');
     ExchangeRate exchangeRate = await _repository.getExchangeRate(currency);
     double rate = 1 / exchangeRate.value;
     return (amount * rate).toStringAsFixed(0);
@@ -51,13 +52,13 @@ class ExchangeState extends State<ExchangePage> {
     return Scaffold(
       appBar: AppBar(
         foregroundColor: Colors.black,
-        title: const Text('Exchange KRW', style: TextStyle(fontWeight: FontWeight.bold)),
+        title: Text(AppLocalizations.of(context)!.exchange, style: const TextStyle(fontWeight: FontWeight.bold)),
         actions: [
           IconButton(
             onPressed: () {
               context.push("/translation");
             },
-            icon: Icon(Icons.g_translate_outlined))
+            icon: const Icon(Icons.g_translate_outlined))
         ],
       ),
       backgroundColor: Colors.white,
@@ -121,7 +122,17 @@ class ExchangeState extends State<ExchangePage> {
                                           controller: _fromEditFieldController,
                                           onChanged: (value) {
                                             setState(() {
-                                              amount = int.parse(value);
+                                              try {
+                                                amount = int.parse(value);
+                                                if (amount == 0 || value == '') {
+                                                  _canGoNext.value = false;
+                                                } else {
+                                                  _canGoNext.value = true;
+                                                }
+                                              } catch (e) {
+                                                amount = 0;
+                                                _canGoNext.value = false;
+                                              }
                                             });
                                           },
                                         )
@@ -165,25 +176,14 @@ class ExchangeState extends State<ExchangePage> {
                                           child: Row(
                                             crossAxisAlignment: CrossAxisAlignment.center,
                                             children: [
-                                              // Text("${getKrwAmount(currency, amount)}", style: const TextStyle(fontSize: 18))
                                               FutureBuilder(
                                                 future: getKrwAmount(currency, amount),
                                                 builder: (context, snapshot) {
                                                   if (snapshot.hasData) {
-                                                    print('snapshot: ${snapshot.data}');
-                                                    if (snapshot.data! == '0') {
-                                                      print('cannot go next');
-                                                      _canGoNext = false;
-                                                    } else {
-                                                      print('can go next');
-                                                      _canGoNext = true;
-                                                    }
                                                     return Text(snapshot.data!, style: const TextStyle(fontSize: 18));
                                                   } else if (snapshot.hasError) {
-                                                    _canGoNext = false;
                                                     return Text("Error!");
                                                   } else {
-                                                    _canGoNext = false;
                                                     return Text("loading...");
                                                   }
                                                 })
@@ -227,11 +227,11 @@ class ExchangeState extends State<ExchangePage> {
                               Container(
                                 margin: const EdgeInsets.only(top: 40),
                                 decoration: BoxDecoration(
-                                  color: _canGoNext ? const Color(0xff3629B7) : Colors.black26,
+                                  color: _canGoNext.value ? const Color(0xff3629B7) : Colors.black26,
                                   borderRadius: BorderRadius.circular(15),
                                 ),
                                 child: CupertinoButton(
-                                  onPressed: _canGoNext ? () async {
+                                  onPressed: _canGoNext.value ? () async {
                                     String krwAmount = await getKrwAmount(currency, amount);
                                     String exchangeRate = await getRate(currency, 2);
                                     ExchangeStore store = ExchangeStore();
@@ -243,8 +243,8 @@ class ExchangeState extends State<ExchangePage> {
                                     context.push("/receipt");
                                   } : null,
                                   child: Container(
-                                      child: const Center(
-                                          child: Text('Exchange', style: TextStyle(color: Colors.white, fontSize: 20))
+                                      child: Center(
+                                          child: Text(AppLocalizations.of(context)!.exchange, style: TextStyle(color: Colors.white, fontSize: 20))
                                       )
                                   ),
                                 ),

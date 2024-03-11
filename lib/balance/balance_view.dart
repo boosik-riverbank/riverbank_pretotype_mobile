@@ -193,6 +193,21 @@ class _BalancePageState extends State<BalancePage> with WidgetsBindingObserver {
                           ),
                           child: CupertinoButton(
                               onPressed: () {
+                                context.push("/exchange_history");
+                              },
+                              child: const Center(
+                                  child: Text('History', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold))
+                              )
+                          )
+                      ),
+                      SizedBox(height: 8,),
+                      Container(
+                          decoration: BoxDecoration(
+                            color: const Color(0xff3629B7),
+                            borderRadius: BorderRadius.circular(15),
+                          ),
+                          child: CupertinoButton(
+                              onPressed: () {
                                 context.push("/withdrawal");
                               },
                               child: const Center(

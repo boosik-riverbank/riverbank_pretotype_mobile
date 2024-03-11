@@ -17,6 +17,9 @@ class ExchangeStore {
   String? _feeCurrency;
   double _appliedExchangeRate = 0.0;
   String? _userId;
+  bool _isFinalized = false;
+  String? _sns;
+  String? _method;
 
   String? getUserId() {
     return _userId;
@@ -48,6 +51,18 @@ class ExchangeStore {
 
   double getAppliedExchangeRate() {
     return _appliedExchangeRate;
+  }
+
+  String? getSns() {
+    return _sns;
+  }
+
+  bool isFinalized() {
+    return _isFinalized;
+  }
+
+  String? getMethod() {
+    return _method;
   }
 
   void setOriginCurrency(String originCurrency) {
@@ -82,8 +97,34 @@ class ExchangeStore {
     _userId = userId;
   }
 
+  void setIsFinalized(bool flag) {
+    _isFinalized = flag;
+  }
+
+  void setSns(String sns) {
+    _sns = sns;
+  }
+
+  void setMethod(String method) {
+    _method = method;
+  }
+
   ExchangeHistory toExchangeData() {
-    return ExchangeHistory(id: '', createdAt: null, originalCurrency: _originalCurrency!, originalAmount: _originalAmount!, targetCurrency: _targetCurrency!, targetAmount: _targetAmount, appliedExchangeRate: _appliedExchangeRate, feeCurrency: _feeCurrency!, fee: _fee, userId: _userId!);
+    return ExchangeHistory(
+        id: '',
+        createdAt: null,
+        finalizedAt: null,
+        originalCurrency: _originalCurrency ?? '',
+        originalAmount: _originalAmount,
+        targetCurrency: _targetCurrency ?? '',
+        targetAmount: _targetAmount,
+        appliedExchangeRate: _appliedExchangeRate,
+        feeCurrency: _feeCurrency ?? '',
+        fee: _fee,
+        userId: _userId!,
+        isFinalized: _isFinalized,
+        sns: _sns,
+        method: _method ?? '');
   }
 
   @override
@@ -101,6 +142,9 @@ class ExchangeStore {
     map['fee_currency'] = _feeCurrency;
     map['applied_exchange_rate'] = _appliedExchangeRate;
     map['user_id'] = _userId;
+    map['is_finalized'] = _isFinalized;
+    map['sns'] = _sns;
+    map['method'] = _method;
     return map;
   }
 }

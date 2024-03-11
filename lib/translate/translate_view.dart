@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:riverbank_pretotype_mobile/component/dropdown.dart';
 import 'package:riverbank_pretotype_mobile/translate/service/translation_service.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class TranslationPage extends StatefulWidget {
   const TranslationPage({super.key});
@@ -17,7 +18,6 @@ class _TranslationPageState extends State<TranslationPage> {
   String _original = 'English';
   String _target = 'Korean';
   final TranslationService _service = TranslationService();
-  String _originalText = '';
   final TextEditingController _originalTextController = TextEditingController();
   final TextEditingController _targetTextController = TextEditingController();
 
@@ -30,7 +30,7 @@ class _TranslationPageState extends State<TranslationPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Translation', style: TextStyle(fontWeight: FontWeight.bold),)
+        title: Text(AppLocalizations.of(context)!.translate, style: TextStyle(fontWeight: FontWeight.bold),)
       ),
       body: SingleChildScrollView(
         child: Container(
@@ -133,8 +133,8 @@ class _TranslationPageState extends State<TranslationPage> {
                     await _translate();
                   },
                   child: Container(
-                    child: const Center(
-                      child: Text('Translate', style: TextStyle(color: Colors.white, fontSize: 20))
+                    child: Center(
+                      child: Text(AppLocalizations.of(context)!.translate, style: TextStyle(color: Colors.white, fontSize: 20))
                     )
                   ),
                 ),

@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:riverbank_pretotype_mobile/exchange/model/exchange_history.dart';
 import 'package:http/http.dart' as http;
+import 'package:riverbank_pretotype_mobile/logger/logger.dart';
 
 abstract class IExchangeHistoryService {
   Future<List<ExchangeHistory>> getExchangeHistoriesById(String userId);
@@ -11,10 +12,17 @@ abstract class IExchangeHistoryService {
 class ExchangeHistoryService implements IExchangeHistoryService {
   @override
   Future<List<ExchangeHistory>> getExchangeHistoriesById(String userId) async {
-    var uri = Uri.parse('https://api-dev.riverbank.world/v1/user/$userId');
-    var response = await http.get(uri);
-    var decodedResponse = jsonDecode(utf8.decode(response.bodyBytes)) as List<Map>;
-    return decodedResponse.map((item) => ExchangeHistory.fromJson(item)).toList();
+    try {
+      logger.d('getExchangeHistoriesById, $userId');
+      var uri = Uri.parse('https://api-dev.riverbank.world/v1/exchangeHistory/$userId');
+      var response = await http.get(uri);
+      var decodedResponse = jsonDecode(utf8.decode(response.bodyBytes));
+
+      return decodedResponse.map<ExchangeHistory>((item) => ExchangeHistory.fromJson(item)).toList();
+    } catch (err) {
+      logger.e('error=${err.toString()}');
+      rethrow;
+    }
   }
 
   @override
@@ -29,6 +37,9 @@ class ExchangeHistoryService implements IExchangeHistoryService {
       'fee_currency': exchangeHistory.feeCurrency,
       'fee': exchangeHistory.fee.toString(),
       'user_id': exchangeHistory.userId,
+      'is_finalized': exchangeHistory.isFinalized,
+      'sns': exchangeHistory.sns,
+      'method': exchangeHistory.method,
     }));
   }
 }

@@ -5,7 +5,7 @@ import 'package:go_router/go_router.dart';
 import 'package:riverbank_pretotype_mobile/balance/repository/balance_repository.dart';
 import 'package:riverbank_pretotype_mobile/login/repository/user_repository.dart';
 import 'package:riverbank_pretotype_mobile/withdrawal/domain/withdrawal.dart';
-import 'package:riverbank_pretotype_mobile/withdrawal/service/withdrawal_service.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class WithdrawalPage extends StatefulWidget {
   const WithdrawalPage({super.key});
@@ -24,7 +24,7 @@ class _WithdrawalPageState extends State<WithdrawalPage> {
     final userRepository = UserRepository();
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Withdraw', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black)),
+        title: Text(AppLocalizations.of(context)!.withdraw, style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black)),
         actions: [
           IconButton(
               onPressed: () {
@@ -57,11 +57,12 @@ class _WithdrawalPageState extends State<WithdrawalPage> {
                       if (user != null) {
                         Withdrawal().doWithdraw(BalanceRepository(), user.id, 'KRW', int.parse(_textController.text)).then((_) {
                           Fluttertoast.showToast(msg: 'Withdraw success!');
+                          context.go('/balance');
                         });
                       }
                     },
-                    child: const Center(
-                        child: Text('Withdraw', style: TextStyle(color: Colors.white, fontSize: 20))
+                    child: Center(
+                        child: Text(AppLocalizations.of(context)!.withdraw, style: TextStyle(color: Colors.white, fontSize: 20))
                     )
                 )
             )

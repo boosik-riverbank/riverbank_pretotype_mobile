@@ -17,6 +17,7 @@ class BalanceService implements IBalanceService {
       'Content-Type': 'application/json'
     });
     var jsonData = jsonDecode(response.body);
+    print(jsonData);
     var result = Balance(currency: jsonData[0]['currency'], amount: jsonData[0]['amount']);
     return result;
   }

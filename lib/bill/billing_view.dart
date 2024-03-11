@@ -120,7 +120,7 @@ class BillPageState extends State<BillPage> {
                                         crossAxisAlignment: CrossAxisAlignment.end,
                                         children: [
                                           Text('1 ${_store.getOriginCurrency()}', style: const TextStyle(color: Color(0xff3629b7), fontSize: 16, fontWeight: FontWeight.w600)),
-                                          Text('= ${_store.getAppliedExchangeRate().toStringAsFixed(2)} ${_store.getTargetCurrency()}', style: const TextStyle(color: Color(0xff3629b7), fontSize: 16, fontWeight: FontWeight.w600))
+                                          Text('= ${toCurrencyForm(_store.getAppliedExchangeRate().toStringAsFixed(2))} ${_store.getTargetCurrency()}', style: const TextStyle(color: Color(0xff3629b7), fontSize: 16, fontWeight: FontWeight.w600))
                                         ],
                                       )
                                     ],

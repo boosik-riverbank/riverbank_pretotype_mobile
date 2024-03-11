@@ -6,6 +6,7 @@ import 'package:go_router/go_router.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 
 import 'package:http/http.dart' as http;
+import 'package:riverbank_pretotype_mobile/balance/repository/balance_repository.dart';
 import 'package:riverbank_pretotype_mobile/common/error.dart';
 import 'package:riverbank_pretotype_mobile/login/repository/user_repository.dart';
 import 'package:riverbank_pretotype_mobile/login/service/login_service.dart';
@@ -61,11 +62,13 @@ class _LoginPageState extends State<LoginPage> {
                         final user = await LoginService().handleGoogleSignIn();
                         await LoginService().saveUserToPreference(user.id);
                         await UserRepository().init(user.id);
+                        await BalanceRepository().getBalance(user.id, 'KRW');
                         context.go('/balance');
                       } catch (error) {
                         if (error is DuplicateEmailException) {
                           print('duplicated key error!!!');
                         }
+                        print('error: $error');
                       }
                     },
                     child: Center(
@@ -85,6 +88,7 @@ class _LoginPageState extends State<LoginPage> {
                         final user = await LoginService().handleFacebookSignIn();
                         await LoginService().saveUserToPreference(user.id);
                         await UserRepository().init(user.id);
+                        await BalanceRepository().getBalance(user.id, 'KRW');
                         context.go('/balance');
                       } catch (error) {
                         if (error is DuplicateEmailException) {

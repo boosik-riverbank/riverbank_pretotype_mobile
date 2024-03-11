@@ -25,7 +25,7 @@ class Onboarding {
     logger.d('User loading finish: $user');
     if (user != null) {
       logger.d('User ${user.id} info is already saved in preference');
-      final isSignedUp = await LoginService().isSignedUp(user.email);
+      final isSignedUp = await LoginService().isSignedUp(user.email, user.provider);
       if (isSignedUp) {
         logger.d('User ${user.id} is already signed up.');
         await UserRepository().init(user.id);

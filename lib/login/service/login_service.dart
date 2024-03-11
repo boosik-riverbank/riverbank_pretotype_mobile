@@ -5,6 +5,7 @@ import 'package:http/http.dart' as http;
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:riverbank_pretotype_mobile/common/error.dart';
 import 'package:riverbank_pretotype_mobile/logger/logger.dart';
+import 'package:riverbank_pretotype_mobile/login/exception/not_signed_in_exception.dart';
 import 'package:riverbank_pretotype_mobile/login/model/user.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -32,29 +33,59 @@ class LoginService {
     return userId != null && jsonData.length > 0;
   }
 
-  Future<bool> isSignedUp(String email) async {
+  Future<bool> isSignedUp(String email, String provider) async {
+    switch (provider) {
+      case 'google':
+        final isSignedIn = await googleSignIn?.isSignedIn() ?? false;
+        if (isSignedIn) {
+          break;
+        } else {
+          logger.e('This user is not signed in. provider: google');
+          throw NotSignedInException();
+        }
+        break;
+      case 'facebook':
+        final LoginResult result = await FacebookAuth.instance.login(permissions: ['public_profile', 'email']);
+        if (result.status == LoginStatus.failed) {
+          logger.e('This user is not signed in. provider: facebook');
+          throw NotSignedInException();
+        }
+        break;
+    }
+
     final emailQueryUri = Uri.parse('https://api-dev.riverbank.world/v1/user?email=$email');
     final emailQueryResponse = await http.get(emailQueryUri, headers: {
       'Content-Type': 'application/json'
     });
     final jsonData = jsonDecode(emailQueryResponse.body);
-    return jsonData.length > 0;
+    logger.d('LoginService isSignedUp? (email: $email) : $jsonData}');
+    if (jsonData['message'] == 'Cannot find user') {
+      return false;
+    }
+
+    return true;
   }
 
   Future<User> handleGoogleSignIn() async {
     logger.i('handleGoogleSignIn()');
     final account = await googleSignIn?.signIn();
-    final isSignedUp = await this.isSignedUp(account?.email ?? '');
+    logger.d('google account: ${account.toString()}');
+    if (account == null) {
+      throw NotSignedInException();
+    }
+
+    final isSignedUp = await this.isSignedUp(account.email, 'google');
     if (!isSignedUp) {
       // sign up
+      logger.d('This user need to sign up');
       final postUserUri = Uri.parse('https://api-dev.riverbank.world/v1/user');
       final postUserResponse = await http.post(postUserUri, headers: {
         'Content-Type': 'application/json'
       }, body: jsonEncode({
-        'name': account?.displayName,
-        'email': account?.email,
+        'name': account.displayName,
+        'email': account.email,
         'provider': 'google',
-        'profile_image_url': account?.photoUrl,
+        'profile_image_url': account.photoUrl,
       }));
 
       if (postUserResponse.statusCode == 500) {
@@ -67,12 +98,12 @@ class LoginService {
       return User.fromJson(json);
     } else {
       // already sign up
+      logger.d('This user is already member');
       var uri = Uri.parse('https://api-dev.riverbank.world/v1/user?email=${account?.email ?? ''}');
       final response = await http.get(uri);
       final json = jsonDecode(response.body);
-      final user = json[0];
 
-      return User.fromJson(user);
+      return User.fromJson(json);
     }
   }
 
@@ -84,7 +115,7 @@ class LoginService {
       final AccessToken accessToken = result.accessToken!;
       final user = await FacebookAuth.instance.getUserData(fields: "name,email,picture.width(200)");
       logger.d('user: $user');
-      final isSignedUp = await this.isSignedUp(user['email']);
+      final isSignedUp = await this.isSignedUp(user['email'], 'facebook');
       if (!isSignedUp) {
         // need to sign up
         final postUserUri = Uri.parse('https://api-dev.riverbank.world/v1/user');
